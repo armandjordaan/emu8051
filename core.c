@@ -504,13 +504,7 @@ int load_raw(struct em8051 *aCPU, char *aFilename)
     f = fopen(aFilename, "r");
     if (!f) return -1;
 
-    int address = 0;
-    while (!feof(f))
-    {
-	int data = readbyte(f);
-        aCPU->mCodeMem[address] = data;
-	address += 1;
-    }
+    fread(aCPU->mCodeMem, 1, aCPU->mCodeMemSize, f);
     fclose(f);
     return 0;
 }
