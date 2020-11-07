@@ -45,6 +45,7 @@ int opt_input_outputlow = 1;
 int opt_clock_select = 3;
 int opt_clock_hz = 12*1000*1000;
 int opt_step_instruction = 0;
+int opt_raw = 0;
 
 int clockspeeds[] = { 
     33*1000*1000,

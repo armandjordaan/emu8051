@@ -20,3 +20,6 @@ emu
 .\#*
 *~
 ~*
+
+# CMake build dir
+build/
