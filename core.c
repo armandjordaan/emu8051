@@ -499,14 +499,50 @@ int readbyte(FILE * f)
 int load_raw(struct em8051 *aCPU, char *aFilename)
 {
     FILE *f;
-    if (aFilename == 0 || aFilename[0] == 0)
-        return -1;
-    f = fopen(aFilename, "r");
-    if (!f) return -1;
+    int ret = 0;
 
-    fread(aCPU->mCodeMem, 1, aCPU->mCodeMemSize, f);
+    if (aFilename == 0 || aFilename[0] == 0) {
+        fprintf(stderr, "Error: File name is empty\n");
+        return -1;
+    }
+
+    f = fopen(aFilename, "rb");
+    if (!f) {
+        perror("Error: Failed to open the raw binary");
+        return -2;
+    }
+
+    /* Get the file size */
+    ret = fseek(f, 0, SEEK_END);
+    if (ret) {
+        fprintf(stderr, "Error: Failed to get file size\n");
+        ret = ferror(f);
+        goto close_file;
+    }
+    long size = ftell(f);
+    if (size == -1L) {
+        perror("Error: Failed to get file size");
+        ret = -3;
+        goto close_file;
+    }
+    rewind(f);
+
+    if (size > aCPU->mCodeMemSize) {
+        fprintf(stderr, "Error: %zu-byte file is larger than %d-byte code memory\n", size, aCPU->mCodeMemSize);
+        ret = -4;
+        goto close_file;
+    }
+
+    size_t len = fread(aCPU->mCodeMem, 1, size, f);
+    if (len != size) {
+        fprintf(stderr, "Error: Failed to read the raw binary\n");
+        return -5;
+    }
+
+close_file:
     fclose(f);
-    return 0;
+
+    return ret;
 }
 
 int load_obj(struct em8051 *aCPU, char *aFilename)
