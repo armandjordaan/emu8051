@@ -297,7 +297,7 @@ int main(int parc, char ** pars)
     {
         for (i = 1; i < parc; i++)
         {
-            if (pars[i][0] == '-' || pars[i][0] == '/')
+            if (pars[i][0] == '-')
             {
                 if (strcmp("step_instruction",pars[i]+1) == 0)
                 {
