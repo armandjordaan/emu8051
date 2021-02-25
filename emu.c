@@ -37,6 +37,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <getopt.h>
+
 #ifdef __linux__
 #include <curses.h>
 #else
@@ -272,6 +275,26 @@ void change_view(struct em8051 *aCPU, int changeto)
     }
 }
 
+void print_help(const char * name) {
+    fprintf(stderr, "Help:\n\n"
+        "%s [options] [filename]\n\n"
+        "Both the filename and options are optional. Available options:\n\n"
+        "Option            Alternate   description\n"
+        "-raw              -r          Load a raw flash dump\n"
+        "-step_instruction -si         Step one instruction at a time\n"
+        "-noexc_iret_sp    -nosp       Disable sp iret exception\n"
+        "-noexc_iret_acc   -noacc      Disable acc iret exception\n"
+        "-noexc_iret_psw   -nopsw      Disable pdw iret exception\n"
+        "-noexc_acc_to_a   -noaa       Disable acc-to-a invalid instruction exception\n"
+        "-noexc_stack      -nostk      Disable stack abnormal behaviour exception\n"
+        "-noexc_invalid_op -noiop      Disable invalid opcode exception\n"
+        "-iolowlow         If out pin is low, hi input from same pin is low\n"
+        "-iolowrand        If out pin is low, hi input from same pin is random\n"
+        "-clock=value      Set clock speed, in Hz\n",
+	name
+    );
+}
+
 int main(int parc, char ** pars)
 {
     int ch = 0;
@@ -293,144 +316,70 @@ int main(int parc, char ** pars)
     emu.xwrite = NULL;
     reset(&emu, 1);
 
+    const struct option long_options[] = {
+        {"raw", no_argument, &opt_raw, 1},
+        {"step_instruction", no_argument, &opt_step_instruction, 1},
+        {"si",               no_argument, &opt_step_instruction, 1},
+        {"noexc_iret_sp", no_argument, &opt_exception_iret_sp, 0},
+        {"nosp",          no_argument, &opt_exception_iret_sp, 0},
+        {"noexc_iret_acc", no_argument, &opt_exception_iret_acc, 0},
+        {"noacc",          no_argument, &opt_exception_iret_acc, 0},
+        {"noexc_iret_psw", no_argument, &opt_exception_iret_psw, 0},
+        {"nopsw",          no_argument, &opt_exception_iret_psw, 0},
+        {"noexc_acc_to_a", no_argument, &opt_exception_acc_to_a, 0},
+        {"noaa",           no_argument, &opt_exception_acc_to_a, 0},
+        {"noexc_stack", no_argument, &opt_exception_stack, 0},
+        {"nostk",       no_argument, &opt_exception_stack, 0},
+        {"noexc_invalid_op", no_argument, &opt_exception_invalid, 0},
+        {"noiop",            no_argument, &opt_exception_invalid, 0},
+        {"iolowlow", no_argument, &opt_input_outputlow, 0},
+        {"iolowrand", no_argument, &opt_input_outputlow, 2},
+        {"clock", required_argument, NULL, 'c'},
+        {"help", no_argument, NULL, 'h'},
+        {NULL, 0, NULL, 0},
+    };
+
     if (parc > 1)
     {
-        for (i = 1; i < parc; i++)
+        int c;
+        while ((c = getopt_long_only(parc, pars, "", long_options, NULL)) != -1)
         {
-            if (pars[i][0] == '-')
-            {
-                if (strcmp("step_instruction",pars[i]+1) == 0)
-                {
-                    opt_step_instruction = 1;
-                }
-                else
-                if (strcmp("si",pars[i]+1) == 0)
-                {
-                    opt_step_instruction = 1;
-                }
-                else
-                if (strcmp("raw",pars[i]+1) == 0)
-                {
-                    opt_raw = 1;
-                }
-                else
-                if (strcmp("r",pars[i]+1) == 0)
-                {
-                    opt_raw = 1;
-                }
-                else
-                if (strcmp("noexc_iret_sp",pars[i]+1) == 0)
-                {
-                    opt_exception_iret_sp = 0;
-                }
-                else
-                if (strcmp("nosp",pars[i]+1) == 0)
-                {
-                    opt_exception_iret_sp = 0;
-                }
-                else
-                if (strcmp("noexc_iret_acc",pars[i]+1) == 0)
-                {
-                    opt_exception_iret_acc = 0;
-                }
-                else
-                if (strcmp("noacc",pars[i]+1) == 0)
-                {
-                    opt_exception_iret_acc = 0;
-                }
-                else
-                if (strcmp("noexc_iret_psw",pars[i]+1) == 0)
-                {
-                    opt_exception_iret_psw = 0;
-                }
-                else
-                if (strcmp("nopsw",pars[i]+1) == 0)
-                {
-                    opt_exception_iret_psw = 0;
-                }
-                else
-                if (strcmp("noexc_acc_to_a",pars[i]+1) == 0)
-                {
-                    opt_exception_acc_to_a = 0;
-                }
-                else
-                if (strcmp("noaa",pars[i]+1) == 0)
-                {
-                    opt_exception_acc_to_a = 0;
-                }
-                else
-                if (strcmp("noexc_stack",pars[i]+1) == 0)
-                {
-                    opt_exception_stack = 0;
-                }
-                else
-                if (strcmp("nostk",pars[i]+1) == 0)
-                {
-                    opt_exception_stack = 0;
-                }
-                else
-                if (strcmp("noexc_invalid_op",pars[i]+1) == 0)
-                {
-                    opt_exception_invalid = 0;
-                }
-                else
-                if (strcmp("noiop",pars[i]+1) == 0)
-                {
-                    opt_exception_invalid = 0;
-                }
-                else
-                if (strcmp("iolowlow",pars[i]+1) == 0)
-                {
-                    opt_input_outputlow = 0;
-                }
-                else
-                if (strcmp("iolowrand",pars[i]+1) == 0)
-                {
-                    opt_input_outputlow = 2;
-                }
-                else
-                if (strncmp("clock=",pars[i]+1,6) == 0)
-                {
-                    opt_clock_select = 12;
-                    opt_clock_hz = atoi(pars[i]+7);
-                    if (opt_clock_hz <= 0)
-                        opt_clock_hz = 1;
-                }
-                else
-                {
-                    printf("Help:\n\n"
-                        "emu8051 [options] [filename]\n\n"
-                        "Both the filename and options are optional. Available options:\n\n"
-                        "Option            Alternate   description\n"
-                        "-raw              -r          Load a raw flash dump\n"
-                        "-step_instruction -si         Step one instruction at a time\n"
-                        "-noexc_iret_sp    -nosp       Disable sp iret exception\n"
-                        "-noexc_iret_acc   -noacc      Disable acc iret exception\n"
-                        "-noexc_iret_psw   -nopsw      Disable pdw iret exception\n"
-                        "-noexc_acc_to_a   -noaa       Disable acc-to-a invalid instruction exception\n"
-                        "-noexc_stack      -nostk      Disable stack abnormal behaviour exception\n"
-                        "-noexc_invalid_op -noiop      Disable invalid opcode exception\n"
-                        "-iolowlow         If out pin is low, hi input from same pin is low\n"
-                        "-iolowrand        If out pin is low, hi input from same pin is random\n"
-                        "-clock=value      Set clock speed, in Hz\n"
-                        );
+            switch (c) {
+            case 0:
+                /* Long option already handled */
+                break;
+            case 'c':
+                opt_clock_select = 12;
+                opt_clock_hz = strtol(optarg, NULL, 10);
+                if (opt_clock_hz <= 0) {
+                    fprintf(stderr, "Error: Invalid clock speed: %s\n\n", optarg);
+                    print_help(pars[0]);
                     return -1;
                 }
+                break;
+            case 'h':
+                print_help(pars[0]);
+                return -1;
+            case '?':
+                fprintf(stderr, "\n");
+                print_help(pars[0]);
+                return -1;
+            default:
+                fprintf(stderr, "Error: getopt returned character code 0%o ??\n", c);
+                return -1;
             }
-            else
+        }
+
+        if (optind < parc)
+        {
+            strcpy(filename, pars[optind]);
+            int load_result = opt_raw ? load_raw(&emu, filename) :
+                                        load_obj(&emu, filename);
+            if (load_result != 0)
             {
-                int load_result = opt_raw ? load_raw(&emu, pars[i]) :
-                                            load_obj(&emu, pars[i]);
-                if (load_result != 0)
-                {
-                    printf("File '%s' load failure, err %d\n\n",
-                           pars[i], load_result);
-                    return -1;
-                }
-                else
-                {
-                    strcpy(filename, pars[i]);
-                }
+                printf("File '%s' load failure, err %d\n\n",
+                       filename, load_result);
+                return -1;
             }
         }
     }
