@@ -126,7 +126,7 @@ static void add_solve_flags(struct em8051 * aCPU, int value1, int value2, int ac
 
 static void sub_solve_flags(struct em8051 * aCPU, int value1, int value2)
 {
-    int carry = (((value1 & 255) - (value2 & 255)) >> 8) & 1;
+    int carry = (value1 < value2) ? 1 : 0;
     int auxcarry = (((value1 & 7) - (value2 & 7)) >> 3) & 1;
     int overflow = ((((value1 & 127) - (value2 & 127)) >> 7) & 1)^carry;
     PSW = (PSW & ~(PSWMASK_C|PSWMASK_AC|PSWMASK_OV)) |
