@@ -303,13 +303,13 @@ int main(int parc, char ** pars)
     int ticked = 1;
 
     memset(&emu, 0, sizeof(emu));
-    emu.mCodeMem     = malloc(65536);
+    emu.mCodeMem     = (unsigned char *)malloc(65536);
     emu.mCodeMemSize = 65536;
-    emu.mExtData     = malloc(65536);
+    emu.mExtData     = (unsigned char *)malloc(65536);
     emu.mExtDataSize = 65536;
-    emu.mLowerData   = malloc(128);
-    emu.mUpperData   = malloc(128);
-    emu.mSFR         = malloc(128);
+    emu.mLowerData   = (unsigned char *)malloc(128);
+    emu.mUpperData   = (unsigned char *)malloc(128);
+    emu.mSFR         = (unsigned char *)malloc(128);
     emu.except       = &emu_exception;
     emu.sfrread      = &emu_sfrread;
     emu.xread = NULL;

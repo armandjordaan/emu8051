@@ -23,3 +23,13 @@ emu
 
 # CMake build dir
 build/
+
+# own convenience scripts
+clean.sh
+configure.sh
+
+.vscode
+
+# any hex files
+*.hex
+

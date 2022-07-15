@@ -591,7 +591,7 @@ void mainview_update(struct em8051 *aCPU)
 
 
     werase(miscview);
-    wprintw(miscview, "\nCycles :% 10u\n", clocks);
+    wprintw(miscview, "\nCycles :%10u\n", clocks);
     wprintw(miscview, "Time   :% 14.3fms\n", 1000.0f * clocks * (1.0f/opt_clock_hz));
     wprintw(miscview, "HW     : Super8051 @%0.1fMHz", opt_clock_hz / (1000*1000.0f));
 
